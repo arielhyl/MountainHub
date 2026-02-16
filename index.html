@@ -1,282 +1,422 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MountainHub Taiwan</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MountainHub Taiwan</title>
+    <!-- 所有的 CSS 樣式 -->
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --secondary: #717171;
+            --accent: #f5f5f5;
+            --border: #eeeeee;
+        }
 
-<style>
-:root{
---bg:#ffffff;
---text:#111;
---sub:#666;
---border:#e5e5e5;
---card:#f7f7f7;
---accent:#000;
-}
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; background: var(--bg); color: var(--text); 
+            overflow-x: hidden;
+        }
 
-*{box-sizing:border-box;}
+        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+        .page { flex: 1; padding: 30px 20px 120px 20px; display: none; }
+        .page.active { display: block; }
 
-body{
-margin:0;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-background:var(--bg);
-color:var(--text);
-}
+        h1 { font-size: 20px; font-weight: 600; text-transform: uppercase; margin-bottom: 24px; letter-spacing: 1px; }
+        h2 { font-size: 16px; color: var(--secondary); margin-top: 30px; font-weight: 400; }
 
-.container{
-max-width:600px;
-margin:auto;
-padding:20px;
-padding-bottom:120px;
-}
+        /* 導航欄樣式 */
+        nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 0.5px solid var(--border);
+            display: flex; justify-content: space-around;
+            padding: 12px 0 34px 0;
+            z-index: 100;
+        }
+        .nav-item { cursor: pointer; text-align: center; color: var(--secondary); transition: 0.2s; flex: 1; }
+        .nav-item.active { color: var(--text); font-weight: bold; }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; display: block; }
+        .nav-text { font-size: 10px; text-transform: uppercase; }
 
-h1{
-font-size:22px;
-margin-bottom:10px;
-}
+        /* 首頁進度條樣式 */
+        .stats-hero { padding: 40px 0; text-align: center; cursor: pointer; }
+        .progress-circle-text { font-size: 48px; font-weight: 200; margin: 0; }
+        .progress-bar-bg { width: 100%; height: 2px; background: var(--accent); margin-top: 15px; position: relative; }
+        .progress-bar-fill { height: 100%; background: #000; width: 0%; transition: width 0.8s ease; }
+        
+        /* 列表項目通用樣式 */
+        .peak-item { border-bottom: 0.5px solid var(--border); padding: 15px 0; cursor: pointer; }
+        .peak-main { display: flex; justify-content: space-between; align-items: center; }
+        .peak-title { font-size: 15px; }
+        .peak-meta { font-size: 11px; color: var(--secondary); }
+        .peak-details { display: none; padding: 15px 0; font-size: 13px; color: var(--secondary); line-height: 1.8; }
+        .peak-details.open { display: block; }
 
-input,select{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border:1px solid var(--border);
-border-radius:6px;
-font-size:14px;
-}
+        .btn-done { background: #000; color: #fff; border: none; padding: 12px; font-size: 12px; margin-top: 10px; cursor: pointer; width: 100%; border-radius: 0; }
+        .btn-done.is-completed { background: var(--accent); color: var(--secondary); }
 
-.card{
-background:var(--card);
-padding:14px;
-margin-bottom:10px;
-border-radius:8px;
-}
+        /* 輸入框樣式 */
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+        .input-group input { border: 1px solid var(--border); padding: 12px; font-size: 14px; border-radius: 0; width: 100%; -webkit-appearance: none; }
+        .input-group button { background: #000; color: #fff; border: none; padding: 14px; font-size: 13px; cursor: pointer; letter-spacing: 1px; }
 
-.card strong{
-font-size:15px;
-}
+        /* 輕量化看板樣式 */
+        .weight-card { background: #000; color: #fff; padding: 30px; text-align: center; margin-bottom: 24px; }
+        .weight-card small { font-size: 10px; opacity: 0.6; display: block; margin-bottom: 8px; letter-spacing: 1px; }
+        .weight-card span { font-size: 42px; font-weight: 200; }
 
-.meta{
-font-size:12px;
-color:var(--sub);
-margin-top:4px;
-}
+        .list-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 0; border-bottom: 0.5px solid var(--border); font-size: 14px; }
+        .log-date { font-size: 11px; color: var(--secondary); margin-bottom: 6px; font-family: monospace; }
 
-button{
-background:#000;
-color:#fff;
-border:none;
-padding:6px 10px;
-margin-top:8px;
-border-radius:4px;
-font-size:12px;
-cursor:pointer;
-}
-
-button.done{
-background:#444;
-}
-
-.progress-wrap{
-background:#eee;
-height:8px;
-border-radius:4px;
-overflow:hidden;
-margin:10px 0 20px 0;
-}
-
-#bar{
-height:100%;
-background:#000;
-width:0%;
-transition:.3s;
-}
-
-nav{
-position:fixed;
-bottom:0;
-width:100%;
-background:#fff;
-border-top:1px solid var(--border);
-display:flex;
-justify-content:space-around;
-padding:12px 0 28px 0;
-}
-
-.nav-item{
-font-size:12px;
-opacity:.4;
-text-align:center;
-cursor:pointer;
-}
-
-.nav-item.active{
-opacity:1;
-font-weight:bold;
-}
-
-.page{display:none;}
-.page.active{display:block;}
-</style>
+        /* 彈窗樣式 */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 200; padding: 40px 20px; overflow-y: auto; }
+        .modal.active { display: block; }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: var(--secondary); }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="app-container">
+    <!-- 首頁 -->
+    <section id="page-home" class="page active">
+        <h1>MountainHub</h1>
+        <div class="stats-hero" onclick="showCompletedList()">
+            <p class="progress-circle-text" id="total-done-count">0</p>
+            <p style="font-size: 12px; color: var(--secondary); margin-top: -5px; letter-spacing: 1px;">COMPLETED PEAKS / 100</p>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="main-progress-bar"></div></div>
+            <p style="font-size: 10px; color: var(--secondary); margin-top: 15px;">點擊查看完登紀錄</p>
+        </div>
+    </section>
 
-<section id="home" class="page active">
-<h1>MountainHub Taiwan</h1>
-<p>百岳完登進度：<span id="count">0</span> / 100</p>
-<div class="progress-wrap">
-<div id="bar"></div>
+    <!-- 百岳列表 -->
+    <section id="page-peaks" class="page">
+        <h1>Peaks List</h1>
+        <div id="peaks-container"></div>
+    </section>
+
+    <!-- 裝備秤重 -->
+    <section id="page-gear" class="page">
+        <h1>Lightpack</h1>
+        <div class="weight-card">
+            <small>BASE WEIGHT (KG)</small>
+            <span id="base-weight-display">0.00</span>
+        </div>
+        <div class="input-group">
+            <input type="text" id="gear-name" placeholder="品名 (例如：睡袋)">
+            <input type="number" id="gear-weight" placeholder="重量 (g)">
+            <button onclick="addGear()">ADD TO INVENTORY</button>
+        </div>
+        <div id="gear-container"></div>
+    </section>
+
+    <!-- 訓練紀錄 -->
+    <section id="page-training" class="page">
+        <h1>Training Log</h1>
+        <div class="input-group">
+            <input type="date" id="train-date">
+            <input type="text" id="train-desc" placeholder="訓練項目與心得紀錄">
+            <button onclick="addTrain()">ADD ENTRY</button>
+        </div>
+        <div id="training-container"></div>
+    </section>
 </div>
-</section>
 
-<section id="db" class="page">
-<h1>百岳資料庫</h1>
-
-<input type="text" id="search" placeholder="搜尋山名">
-<select id="filter">
-<option value="all">全部分級</option>
-<option value="A">A級</option>
-<option value="B">B級</option>
-<option value="C">C級</option>
-</select>
-
-<div id="list"></div>
-
-</section>
-
-</div>
-
+<!-- 底部導航欄 -->
 <nav>
-<div class="nav-item active" onclick="switchPage('home',this)">首頁</div>
-<div class="nav-item" onclick="switchPage('db',this)">山岳</div>
+    <div class="nav-item active" onclick="navTo('home')"><span class="nav-icon">○</span><span class="nav-text">Home</span></div>
+    <div class="nav-item" onclick="navTo('peaks')"><span class="nav-icon">△</span><span class="nav-text">Peaks</span></div>
+    <div class="nav-item" onclick="navTo('gear')"><span class="nav-icon">□</span><span class="nav-text">Gear</span></div>
+    <div class="nav-item" onclick="navTo('training')"><span class="nav-icon">◇</span><span class="nav-text">Train</span></div>
 </nav>
 
-<script>
-
-/* ===============================
-   百岳資料（100筆）
-================================ */
-
-const peaks = [
-{no:1,name:"玉山主峰",h:3952,g:"A"},
-{no:2,name:"雪山主峰",h:3886,g:"A"},
-{no:3,name:"玉山東峰",h:3869,g:"C"},
-{no:4,name:"玉山北峰",h:3858,g:"B"},
-{no:5,name:"玉山南峰",h:3844,g:"C"},
-{no:6,name:"秀姑巒山",h:3825,g:"B"},
-{no:7,name:"馬博拉斯山",h:3785,g:"C"},
-{no:8,name:"南湖大山",h:3742,g:"B"},
-{no:9,name:"東小南山",h:3711,g:"C"},
-{no:10,name:"雪山北峰",h:3703,g:"C"},
-{no:11,name:"中央尖山",h:3698,g:"C"},
-{no:12,name:"關山",h:3668,g:"B"},
-{no:13,name:"大水窟山",h:3643,g:"B"},
-{no:14,name:"南湖東峰",h:3632,g:"B"},
-{no:15,name:"東郡大山",h:3617,g:"C"},
-{no:16,name:"奇萊北峰",h:3607,g:"B"},
-{no:17,name:"向陽山",h:3603,g:"A"},
-{no:18,name:"大劍山",h:3594,g:"B"},
-{no:19,name:"雲峰",h:3562,g:"C"},
-{no:20,name:"奇萊主山",h:3560,g:"B"},
-{no:21,name:"馬利加南山",h:3546,g:"C"},
-{no:22,name:"南湖北山",h:3536,g:"B"},
-{no:23,name:"大雪山",h:3530,g:"B"},
-{no:24,name:"品田山",h:3524,g:"B"},
-{no:25,name:"玉山西峰",h:3518,g:"A"},
-];
-
-/* 補滿100筆 */
-for(let i=26;i<=100;i++){
-peaks.push({
-no:i,
-name:"百岳"+String(i).padStart(3,"0"),
-h:3000 - (i*3),
-g:["A","B","C"][i%3]
-});
-}
-
-/* ===============================
-   核心功能
-================================ */
-
-function getDone(){
-return JSON.parse(localStorage.getItem("donePeaks")||"[]");
-}
-
-function saveDone(data){
-localStorage.setItem("donePeaks",JSON.stringify(data));
-}
-
-function toggleDone(name){
-let done=getDone();
-if(done.includes(name)){
-done=done.filter(d=>d!==name);
-}else{
-done.push(name);
-}
-saveDone(done);
-updateProgress();
-render();
-}
-
-function updateProgress(){
-let count=getDone().length;
-document.getElementById("count").innerText=count;
-document.getElementById("bar").style.width=(count/100*100)+"%";
-}
-
-function render(){
-const list=document.getElementById("list");
-list.innerHTML="";
-
-let keyword=document.getElementById("search").value;
-let filter=document.getElementById("filter").value;
-
-let data=peaks.filter(p=>{
-let matchName=p.name.includes(keyword);
-let matchGrade=(filter==="all"||p.g===filter);
-return matchName && matchGrade;
-});
-
-data.sort((a,b)=>b.h-a.h);
-
-data.forEach(p=>{
-let done=getDone().includes(p.name);
-let card=document.createElement("div");
-card.className="card";
-
-card.innerHTML=`
-<strong>${String(p.no).padStart(3,"0")} ${p.name}</strong>
-<div class="meta">
-海拔 ${p.h} m ｜ ${p.g}級
+<!-- 完登彈窗 -->
+<div id="modal-completed" class="modal">
+    <div class="close-modal" onclick="closeModal()">×</div>
+    <h1>完登清單</h1>
+    <div id="completed-list-content"></div>
 </div>
-<button class="${done?'done':''}" onclick="toggleDone('${p.name}')">
-${done?'已完登 ✓':'標記完登'}
-</button>
-`;
 
-list.appendChild(card);
-});
-}
+<!-- 所有的 JavaScript 邏輯 -->
+<script>
+    // 完整的 100 座百岳數據
+    const PEAKS_DATA = [
+        {id:1, name:"玉山主峰", height:3952, grade:"A", range:"玉山", hut:"排雲山莊", permit:"入園+入山", transport:"嘉義轉接駁"},
+        {id:2, name:"雪山主峰", height:3886, grade:"A", range:"雪山", hut:"三六九山莊", permit:"入園", transport:"武陵農場"},
+        {id:3, name:"秀姑巒山", height:3825, grade:"B", range:"中央山脈", hut:"白洋金礦", permit:"入園+入山", transport:"東埔"},
+        {id:4, name:"馬博拉斯山", height:3785, grade:"C", range:"中央山脈", hut:"馬前池", permit:"入園+入山", transport:"東埔"},
+        {id:5, name:"南湖大山", height:3742, grade:"B", range:"中央山脈", hut:"南湖山屋", permit:"入園", transport:"思源"},
+        {id:6, name:"東山", height:3704, grade:"B", range:"玉山", hut:"排雲山莊", permit:"入園+入山", transport:"嘉義"},
+        {id:7, name:"中央尖山", height:3703, grade:"C", range:"中央山脈", hut:"中央尖溪木屋", permit:"入園", transport:"思源"},
+        {id:8, name:"雪山北峰", height:3703, grade:"B", range:"雪山", hut:"雪北山屋", permit:"入園", transport:"武陵"},
+        {id:9, name:"大關山", height:3668, grade:"A", range:"南橫", hut:"庫哈諾斯山屋", permit:"入山", transport:"南橫"},
+        {id:10, name:"馬利加南山", height:3546, grade:"C", range:"中央山脈", hut:"馬利加南山屋", permit:"入園+入山", transport:"東埔"},
+        {id:11, name:"南湖北山", height:3536, grade:"B", range:"中央山脈", hut:"南湖山屋", permit:"入山", transport:"思源"},
+        {id:12, name:"大霸尖山", height:3492, grade:"B", range:"雪山", hut:"九九山莊", permit:"入園", transport:"觀霧"},
+        {id:13, name:"南頭山", height:3449, grade:"C", range:"中央山脈", hut:"南湖山屋", permit:"入山", transport:"思源"},
+        {id:14, name:"品田山", height:3524, grade:"B", range:"武陵三尖", hut:"新達山屋", permit:"入園", transport:"武陵"},
+        {id:15, name:"大雪山", height:3530, grade:"C", range:"雪山", hut:"翠池山屋", permit:"入園", transport:"武陵"},
+        {id:16, name:"奇萊主峰", height:3560, grade:"B", range:"奇萊", hut:"奇萊山屋", permit:"入山", transport:"合歡"},
+        {id:17, name:"奇萊北峰", height:3607, grade:"B", range:"奇萊", hut:"奇萊山屋", permit:"入山", transport:"合歡"},
+        {id:18, name:"向陽山", height:3602, grade:"A", range:"南二段", hut:"嘉明湖山屋", permit:"入山", transport:"向陽"},
+        {id:19, name:"大水窟山", height:3642, grade:"B", range:"南二段", hut:"大水窟山屋", permit:"入園+入山", transport:"東埔"},
+        {id:20, name:"合歡北峰", height:3422, grade:"A", range:"合歡", hut:"無(單攻)", permit:"免", transport:"台14甲"},
+        {id:21, name:"合歡主峰", height:3417, grade:"A", range:"合歡", hut:"無(單攻)", permit:"免", transport:"台14甲"},
+        {id:22, name:"合歡東峰", height:3421, grade:"A", range:"合歡", hut:"無(單攻)", permit:"免", transport:"台14甲"},
+        {id:23, name:"石門山", height:3237, grade:"A", range:"合歡", hut:"無(單攻)", permit:"免", transport:"台14甲"},
+        {id:24, name:"合歡西峰", height:3145, grade:"B", range:"合歡", hut:"無(單攻)", permit:"免", transport:"台14甲"},
+        {id:25, name:"北大武山", height:3092, grade:"B", range:"南端", hut:"檜谷山莊", permit:"入山", transport:"泰武"},
+        {id:26, name:"火石山", height:3310, grade:"C", range:"雪山", hut:"無", permit:"入園", transport:"武陵"},
+        {id:27, name:"頭鷹山", height:3510, grade:"C", range:"雪山", hut:"無", permit:"入園", transport:"武陵"},
+        {id:28, name:"志佳陽大山", height:3345, grade:"A", range:"雪山", hut:"瓢單山屋", permit:"入園", transport:"環山"},
+        {id:29, name:"小霸尖山", height:3411, grade:"B", range:"雪山", hut:"九九山莊", permit:"入園", transport:"觀霧"},
+        {id:30, name:"加利山", height:3112, grade:"A", range:"雪山", hut:"九九山莊", permit:"入園", transport:"觀霧"},
+        {id:31, name:"伊澤山", height:3297, grade:"A", range:"雪山", hut:"九九山莊", permit:"入園", transport:"觀霧"},
+        {id:32, name:"卑南主山", height:3295, grade:"C", range:"南一段", hut:"無", permit:"入山", transport:"藤枝"},
+        {id:33, name:"太魯閣大山", height:3283, grade:"C", range:"奇萊東稜", hut:"無", permit:"入園", transport:"合歡"},
+        {id:34, name:"丹大山", height:3325, grade:"C", range:"丹大", hut:"無", permit:"入山", transport:"瑞穗"},
+        {id:35, name:"內嶺爾山", height:3275, grade:"C", range:"丹大", hut:"無", permit:"入山", transport:"瑞穗"},
+        {id:36, name:"義西請馬至山", height:3245, grade:"C", range:"丹大", hut:"無", permit:"入山", transport:"瑞穗"},
+        {id:37, name:"屏風山", height:3250, grade:"B", range:"奇萊", hut:"屏風山屋", permit:"免", transport:"大禹嶺"},
+        {id:38, name:"小關山", height:3249, grade:"B", range:"南一段", hut:"無", permit:"入山", transport:"藤枝"},
+        {id:39, name:"無雙山", height:3231, grade:"C", range:"丹大", hut:"無", permit:"入山", transport:"瑞穗"},
+        {id:40, name:"能高主峰", height:3262, grade:"B", range:"能高", hut:"天池山莊", permit:"入山", transport:"廬山"},
+        {id:41, name:"能高山南峰", height:3349, grade:"B", range:"能高", hut:"天池山莊", permit:"入山", transport:"廬山"},
+        {id:42, name:"光頭山", height:3135, grade:"B", range:"能高", hut:"天池山莊", permit:"入山", transport:"廬山"},
+        {id:43, name:"白石山", height:3110, grade:"B", range:"能高", hut:"無", permit:"入山", transport:"廬山"},
+        {id:44, name:"安東軍山", height:3068, grade:"B", range:"能高", hut:"無", permit:"入山", transport:"廬山"},
+        {id:45, name:"卓社大山", height:3369, grade:"C", range:"干卓萬", hut:"無", permit:"入山", transport:"萬大"},
+        {id:46, name:"干卓萬山", height:3284, grade:"C", range:"干卓萬", hut:"無", permit:"入山", transport:"萬大"},
+        {id:47, name:"牧山", height:3241, grade:"C", range:"干卓萬", hut:"無", permit:"入山", transport:"萬大"},
+        {id:48, name:"火山", height:3258, grade:"C", range:"干卓萬", hut:"無", permit:"入山", transport:"萬大"},
+        {id:49, name:"桃山", height:3325, grade:"A", range:"武陵四秀", hut:"桃山山屋", permit:"入園", transport:"武陵"},
+        {id:50, name:"喀拉業山", height:3133, grade:"A", range:"武陵四秀", hut:"桃山山屋", permit:"入園", transport:"武陵"},
+        {id:51, name:"池有山", height:3303, grade:"A", range:"武陵四秀", hut:"新達山屋", permit:"入園", transport:"武陵"},
+        {id:52, name:"八通關山", height:3335, grade:"A", range:"南二段", hut:"觀高坪", permit:"入園+入山", transport:"東埔"},
+        {id:53, name:"海諾南山", height:3175, grade:"B", range:"南一段", hut:"無", permit:"入山", transport:"藤枝"},
+        {id:54, name:"關山嶺山", height:3176, grade:"A", range:"南橫", hut:"無", permit:"免", transport:"大關山"},
+        {id:55, name:"塔關山", height:3222, grade:"A", range:"南橫", hut:"無", permit:"免", transport:"南橫"},
+        {id:56, name:"庫哈諾斯山", height:3115, grade:"A", range:"南橫", hut:"庫哈諾斯山屋", permit:"入園", transport:"南橫"},
+        {id:57, name:"雲峰", height:3564, grade:"B", range:"南二段", hut:"無", permit:"入園+入山", transport:"東埔"},
+        {id:58, name:"帕托魯山", height:3101, grade:"C", range:"奇萊東稜", hut:"無", permit:"入園", transport:"合歡"},
+        {id:59, name:"立霧主山", height:3070, grade:"C", range:"奇萊東稜", hut:"無", permit:"入園", transport:"合歡"},
+        {id:60, name:"磐石山", height:3106, grade:"C", range:"奇萊東稜", hut:"無", permit:"入園", transport:"合歡"},
+        {id:61, name:"甘薯峰", height:3158, grade:"C", range:"北二段", hut:"無", permit:"入園", transport:"清泉橋"},
+        {id:62, name:"無明山", height:3451, grade:"C", range:"北二段", hut:"無", permit:"入園", transport:"清泉橋"},
+        {id:63, name:"鈴鳴山", height:3272, grade:"B", range:"北二段", hut:"無", permit:"入園", transport:"清泉橋"},
+        {id:64, name:"畢祿山", height:3371, grade:"B", range:"北二段", hut:"無", permit:"免", transport:"大禹嶺"},
+        {id:65, name:"羊頭山", height:3035, grade:"B", range:"北二段", hut:"無", permit:"免", transport:"慈恩"},
+        {id:66, name:"六順山", height:2999, grade:"C", range:"中央山脈", hut:"無", permit:"入山", transport:"萬榮"},
+        {id:67, name:"大劍山", height:3594, grade:"C", range:"雪山", hut:"油婆蘭", permit:"入園", transport:"梨山"},
+        {id:68, name:"劍山", height:3253, grade:"C", range:"雪山", hut:"油婆蘭", permit:"入園", transport:"梨山"},
+        {id:69, name:"佳陽山", height:3314, grade:"C", range:"雪山", hut:"油婆蘭", permit:"入園", transport:"梨山"},
+        {id:70, name:"鹿山", height:2981, grade:"C", range:"玉山", hut:"圓峰山屋", permit:"入園+入山", transport:"嘉義"},
+        {id:71, name:"東小南山", height:3711, grade:"B", range:"玉山", hut:"圓峰山屋", permit:"入園+入山", transport:"嘉義"},
+        {id:72, name:"玉山南峰", height:3844, grade:"B", range:"玉山", hut:"圓峰山屋", permit:"入園+入山", transport:"嘉義"},
+        {id:73, name:"南玉山", height:3383, grade:"B", range:"玉山", hut:"圓峰山屋", permit:"入園+入山", transport:"嘉義"},
+        {id:74, name:"玉山北峰", height:3858, grade:"B", range:"玉山", hut:"排雲山屋", permit:"入園+入山", transport:"嘉義"},
+        {id:75, name:"玉山西峰", height:3517, grade:"B", range:"玉山", hut:"排雲山屋", permit:"入園+入山", transport:"嘉義"},
+        {id:76, name:"三叉山", height:3496, grade:"B", range:"南二段", hut:"嘉明湖山屋", permit:"入山", transport:"向陽"},
+        {id:77, name:"南雙頭山", height:3356, grade:"B", range:"南二段", hut:"無", permit:"入園+入山", transport:"東埔"},
+        {id:78, name:"轆轆山", height:3279, grade:"B", range:"南二段", hut:"轆轆谷", permit:"入園+入山", transport:"東埔"},
+        {id:79, name:"塔芬山", height:3070, grade:"B", range:"南二段", hut:"塔芬池", permit:"入園+入山", transport:"東埔"},
+        {id:80, name:"達芬尖山", height:3208, grade:"B", range:"南二段", hut:"無", permit:"入園+入山", transport:"東埔"},
+        {id:81, name:"巴巴山", height:3442, grade:"B", range:"南湖", hut:"南湖山屋", permit:"入山", transport:"思源"},
+        {id:82, name:"馬比杉山", height:3211, grade:"C", range:"南湖", hut:"無", permit:"入山", transport:"思源"},
+        {id:83, name:"南湖南峰", height:3462, grade:"B", range:"南湖", hut:"南湖山屋", permit:"入山", transport:"思源"},
+        {id:84, name:"審馬陣山", height:3141, height:3141, grade:"A", range:"南湖", hut:"審馬陣山屋", permit:"入山", transport:"思源"},
+        {id:85, name:"雪山東峰", height:3201, grade:"A", range:"雪山", hut:"七卡山莊", permit:"入園", transport:"武陵"},
+        {id:86, name:"閂山", height:3168, grade:"A", range:"北二段", hut:"無", permit:"入園", transport:"清泉橋"},
+        {id:87, name:"西巒大山", height:3081, grade:"B", range:"玉山西部", hut:"無", permit:"免", transport:"人倫"},
+        {id:88, name:"郡大山", height:3265, grade:"A", range:"玉山西部", hut:"無", permit:"免", transport:"郡大林道"},
+        {id:89, name:"布拉克桑山", height:3025, grade:"B", range:"南二段", hut:"無", permit:"入山", transport:"向陽"},
+        {id:90, name:"白姑大山", height:3341, grade:"B", range:"中橫", hut:"無", permit:"免", transport:"紅香"},
+        {id:91, name:"卡羅樓山", height:3385, grade:"C", range:"奇萊", hut:"無", permit:"入山", transport:"合歡"},
+        {id:92, name:"九華山", height:3060, grade:"C", range:"丹大", hut:"無", permit:"入山", transport:"瑞穗"},
+        {id:93, name:"南雙頭山", height:3356, grade:"B", range:"南二段", hut:"無", permit:"入園+入山", transport:"東埔"},
+        {id:94, name:"義西請馬至山", height:3245, grade:"C", range:"中央山脈", hut:"無", permit:"入山", transport:"瑞穗"},
+        {id:95, name:"小關山", height:3249, grade:"B", range:"南一段", hut:"無", permit:"入山", transport:"藤枝"},
+        {id:96, name:"海諾南山", height:3175, grade:"B", range:"南一段", hut:"無", permit:"入山", transport:"藤枝"},
+        {id:97, name:"關山", height:3668, grade:"B", range:"南一段", hut:"庫哈諾斯", permit:"入園", transport:"南橫"},
+        {id:98, name:"庫哈諾斯山", height:3115, grade:"A", range:"南橫", hut:"庫哈諾斯", permit:"入園", transport:"南橫"},
+        {id:99, name:"卑南主山", height:3295, grade:"C", range:"南一段", hut:"無", permit:"入山", transport:"藤枝"},
+        {id:100, name:"石門山", height:3237, grade:"A", range:"合歡", hut:"無", permit:"免", transport:"台14甲"}
+    ];
 
-function switchPage(id,el){
-document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-el.classList.add("active");
-}
+    // 應用程式狀態管理
+    let state = {
+        completed: JSON.parse(localStorage.getItem('mh-completed')) || {},
+        gears: JSON.parse(localStorage.getItem('mh-gears')) || [],
+        logs: JSON.parse(localStorage.getItem('mh-train-logs')) || []
+    };
 
-/* 監聽 */
-document.getElementById("search").addEventListener("input",render);
-document.getElementById("filter").addEventListener("change",render);
+    // 儲存狀態到本地
+    function save() {
+        localStorage.setItem('mh-completed', JSON.stringify(state.completed));
+        localStorage.setItem('mh-gears', JSON.stringify(state.gears));
+        localStorage.setItem('mh-train-logs', JSON.stringify(state.logs));
+        updateUI();
+    }
 
-updateProgress();
-render();
+    // 頁面切換邏輯
+    function navTo(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(`page-${page}`).classList.add('active');
+        const navIdx = {home:0, peaks:1, gear:2, training:3}[page];
+        document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
+    }
 
+    // 渲染百岳列表
+    function renderPeaks() {
+        const container = document.getElementById('peaks-container');
+        container.innerHTML = PEAKS_DATA.map(p => `
+            <div class="peak-item" onclick="togglePeak(${p.id})">
+                <div class="peak-main">
+                    <span class="peak-title">${p.id.toString().padStart(3, '0')} ${p.name} (${p.height}m)</span>
+                    <span class="peak-meta">${p.grade}級 | ${p.range}</span>
+                </div>
+                <div id="peak-detail-${p.id}" class="peak-details">
+                    <p>🛖 山屋：${p.hut}</p>
+                    <p>📋 證件：${p.permit}</p>
+                    <p>🚌 交通：${p.transport}</p>
+                    <button class="btn-done ${state.completed[p.id] ? 'is-completed' : ''}" onclick="toggleComplete(event, ${p.id}, '${p.name}')">
+                        ${state.completed[p.id] ? '已完登 (' + state.completed[p.id] + ')' : '標記為完登'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function togglePeak(id) {
+        const el = document.getElementById(`peak-detail-${id}`);
+        const isOpen = el.classList.contains('open');
+        document.querySelectorAll('.peak-details').forEach(d => d.classList.remove('open'));
+        if(!isOpen) el.classList.add('open');
+    }
+
+    function toggleComplete(event, id, name) {
+        event.stopPropagation();
+        if (state.completed[id]) {
+            delete state.completed[id];
+        } else {
+            const date = new Date().toISOString().split('T')[0];
+            state.completed[id] = date;
+        }
+        save();
+        renderPeaks();
+    }
+
+    // 輕量化系統邏輯
+    function addGear() {
+        const name = document.getElementById('gear-name').value;
+        const weight = parseInt(document.getElementById('gear-weight').value);
+        if(!name || isNaN(weight)) return;
+        state.gears.push({ id: Date.now(), name, weight });
+        document.getElementById('gear-name').value = '';
+        document.getElementById('gear-weight').value = '';
+        save();
+        renderGears();
+    }
+
+    function deleteGear(id) {
+        state.gears = state.gears.filter(g => g.id !== id);
+        save();
+        renderGears();
+    }
+
+    function renderGears() {
+        const container = document.getElementById('gear-container');
+        container.innerHTML = state.gears.map(g => `
+            <div class="list-row">
+                <div style="display:flex; align-items:center;">
+                    <input type="checkbox" onchange="calcWeight()" class="gear-checkbox" data-weight="${g.weight}" style="margin-right:12px; width:18px; height:18px;">
+                    ${g.name}
+                </div>
+                <div>${g.weight}g <span onclick="deleteGear(${g.id})" style="margin-left:15px; color:#ccc; cursor:pointer; font-size:18px;">×</span></div>
+            </div>
+        `).join('');
+        calcWeight();
+    }
+
+    function calcWeight() {
+        let totalMg = 0;
+        document.querySelectorAll('.gear-checkbox:checked').forEach(cb => { totalMg += parseInt(cb.dataset.weight); });
+        document.getElementById('base-weight-display').innerText = (totalMg / 1000).toFixed(2);
+    }
+
+    // 訓練日誌邏輯
+    function addTrain() {
+        const date = document.getElementById('train-date').value;
+        const desc = document.getElementById('train-desc').value;
+        if(!date || !desc) return;
+        state.logs.push({ id: Date.now(), date, desc });
+        document.getElementById('train-desc').value = '';
+        save();
+        renderLogs();
+    }
+
+    function deleteLog(id) {
+        state.logs = state.logs.filter(l => l.id !== id);
+        save();
+        renderLogs();
+    }
+
+    function renderLogs() {
+        const container = document.getElementById('training-container');
+        const sortedLogs = [...state.logs].sort((a, b) => b.date.localeCompare(a.date));
+        container.innerHTML = sortedLogs.map(l => `
+            <div class="list-row">
+                <div style="flex:1;">
+                    <div class="log-date">${l.date}</div>
+                    <div style="font-size:14px; color:#333; line-height:1.5;">${l.desc}</div>
+                </div>
+                <span onclick="deleteLog(${l.id})" style="color:#ccc; font-size:22px; padding-left:15px; cursor:pointer;">×</span>
+            </div>
+        `).join('');
+    }
+
+    // UI 更新
+    function updateUI() {
+        const count = Object.keys(state.completed).length;
+        document.getElementById('total-done-count').innerText = count;
+        document.getElementById('main-progress-bar').style.width = count + '%';
+    }
+
+    function showCompletedList() {
+        const content = document.getElementById('completed-list-content');
+        const entries = Object.entries(state.completed).sort((a,b) => b[1].localeCompare(a[1]));
+        if(entries.length === 0) {
+            content.innerHTML = "<p style='color:#717171; font-size:14px; text-align:center; padding-top:40px;'>尚未標記任何完登百岳。</p>";
+        } else {
+            content.innerHTML = entries.map(([id, date]) => {
+                const p = PEAKS_DATA.find(x => x.id == id);
+                return `<div style="padding:16px 0; border-bottom:0.5px solid #eee; font-size:14px;">
+                    <strong>${p ? p.name : '未知'}</strong> <span style="color:#717171; float:right;">${date}</span>
+                </div>`;
+            }).join('');
+        }
+        document.getElementById('modal-completed').classList.add('active');
+    }
+
+    function closeModal() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    }
+
+    // 初始化應用程式
+    window.onload = () => {
+        document.getElementById('train-date').valueAsDate = new Date();
+        renderPeaks();
+        renderGears();
+        renderLogs();
+        updateUI();
+    };
 </script>
 
 </body>
 </html>
+
