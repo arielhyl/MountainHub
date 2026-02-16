@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MountainHub Taiwan</title>
-    <!-- 所有的 CSS 樣式 -->
     <style>
         :root {
             --bg: #ffffff;
@@ -25,10 +24,15 @@
         .page { flex: 1; padding: 30px 20px 120px 20px; display: none; }
         .page.active { display: block; }
 
-        h1 { font-size: 20px; font-weight: 600; text-transform: uppercase; margin-bottom: 24px; letter-spacing: 1px; }
-        h2 { font-size: 16px; color: var(--secondary); margin-top: 30px; font-weight: 400; }
+        /* Header with minimalist icons */
+        .header-wrap { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .backup-icons { display: flex; gap: 15px; padding-top: 5px; }
+        .icon-btn { cursor: pointer; color: var(--secondary); transition: color 0.2s; }
+        .icon-btn:hover { color: var(--text); }
 
-        /* 導航欄樣式 */
+        h1 { font-size: 20px; font-weight: 600; text-transform: uppercase; margin: 0; letter-spacing: 1px; }
+        h2 { font-size: 14px; color: var(--text); margin: 20px 0 10px 0; font-weight: 600; border-left: 3px solid #000; padding-left: 8px; }
+
         nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: rgba(255, 255, 255, 0.95);
@@ -43,13 +47,14 @@
         .nav-icon { font-size: 20px; margin-bottom: 4px; display: block; }
         .nav-text { font-size: 10px; text-transform: uppercase; }
 
-        /* 首頁進度條樣式 */
         .stats-hero { padding: 40px 0; text-align: center; cursor: pointer; }
         .progress-circle-text { font-size: 48px; font-weight: 200; margin: 0; }
         .progress-bar-bg { width: 100%; height: 2px; background: var(--accent); margin-top: 15px; position: relative; }
         .progress-bar-fill { height: 100%; background: #000; width: 0%; transition: width 0.8s ease; }
         
-        /* 列表項目通用樣式 */
+        .search-box { margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 0; font-size: 14px; }
+
         .peak-item { border-bottom: 0.5px solid var(--border); padding: 15px 0; cursor: pointer; }
         .peak-main { display: flex; justify-content: space-between; align-items: center; }
         .peak-title { font-size: 15px; }
@@ -57,23 +62,20 @@
         .peak-details { display: none; padding: 15px 0; font-size: 13px; color: var(--secondary); line-height: 1.8; }
         .peak-details.open { display: block; }
 
-        .btn-done { background: #000; color: #fff; border: none; padding: 12px; font-size: 12px; margin-top: 10px; cursor: pointer; width: 100%; border-radius: 0; }
+        .btn-done { background: #000; color: #fff; border: none; padding: 12px; font-size: 12px; margin-top: 10px; cursor: pointer; width: 100%; }
         .btn-done.is-completed { background: var(--accent); color: var(--secondary); }
 
-        /* 輸入框樣式 */
         .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
-        .input-group input { border: 1px solid var(--border); padding: 12px; font-size: 14px; border-radius: 0; width: 100%; -webkit-appearance: none; }
-        .input-group button { background: #000; color: #fff; border: none; padding: 14px; font-size: 13px; cursor: pointer; letter-spacing: 1px; }
+        .input-group input, .input-group select { border: 1px solid var(--border); padding: 12px; font-size: 14px; border-radius: 0; width: 100%; -webkit-appearance: none; }
+        .input-group button { background: #000; color: #fff; border: none; padding: 14px; font-size: 13px; cursor: pointer; }
 
-        /* 輕量化看板樣式 */
         .weight-card { background: #000; color: #fff; padding: 30px; text-align: center; margin-bottom: 24px; }
-        .weight-card small { font-size: 10px; opacity: 0.6; display: block; margin-bottom: 8px; letter-spacing: 1px; }
+        .weight-card small { font-size: 10px; opacity: 0.6; display: block; margin-bottom: 8px; }
         .weight-card span { font-size: 42px; font-weight: 200; }
 
         .list-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 0; border-bottom: 0.5px solid var(--border); font-size: 14px; }
-        .log-date { font-size: 11px; color: var(--secondary); margin-bottom: 6px; font-family: monospace; }
+        .log-date { font-size: 11px; color: var(--secondary); margin-bottom: 6px; }
 
-        /* 彈窗樣式 */
         .modal { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 200; padding: 40px 20px; overflow-y: auto; }
         .modal.active { display: block; }
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: var(--secondary); }
@@ -82,9 +84,23 @@
 <body>
 
 <div class="app-container">
-    <!-- 首頁 -->
+    <!-- Home Page -->
     <section id="page-home" class="page active">
-        <h1>MountainHub</h1>
+        <div class="header-wrap">
+            <h1>MountainHub</h1>
+            <div class="backup-icons">
+                <!-- Export Icon -->
+                <div class="icon-btn" onclick="exportData()" title="匯出資料">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <!-- Import Icon -->
+                <label class="icon-btn" title="匯入資料">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <input type="file" id="import-file" style="display:none" onchange="importData(event)">
+                </label>
+            </div>
+        </div>
+        
         <div class="stats-hero" onclick="showCompletedList()">
             <p class="progress-circle-text" id="total-done-count">0</p>
             <p style="font-size: 12px; color: var(--secondary); margin-top: -5px; letter-spacing: 1px;">COMPLETED PEAKS / 100</p>
@@ -93,13 +109,16 @@
         </div>
     </section>
 
-    <!-- 百岳列表 -->
+    <!-- Peaks Page -->
     <section id="page-peaks" class="page">
         <h1>Peaks List</h1>
+        <div class="search-box">
+            <input type="text" id="peak-search" placeholder="搜尋山名、山系或等級..." oninput="renderPeaks()">
+        </div>
         <div id="peaks-container"></div>
     </section>
 
-    <!-- 裝備秤重 -->
+    <!-- Gear Page -->
     <section id="page-gear" class="page">
         <h1>Lightpack</h1>
         <div class="weight-card">
@@ -107,14 +126,21 @@
             <span id="base-weight-display">0.00</span>
         </div>
         <div class="input-group">
-            <input type="text" id="gear-name" placeholder="品名 (例如：睡袋)">
+            <select id="gear-category">
+                <option value="炊具系統">炊具系統</option>
+                <option value="電子系統">電子系統</option>
+                <option value="背負系統">背負系統</option>
+                <option value="睡眠系統">睡眠系統</option>
+                <option value="其他">其他</option>
+            </select>
+            <input type="text" id="gear-name" placeholder="品名">
             <input type="number" id="gear-weight" placeholder="重量 (g)">
             <button onclick="addGear()">ADD TO INVENTORY</button>
         </div>
         <div id="gear-container"></div>
     </section>
 
-    <!-- 訓練紀錄 -->
+    <!-- Training Page -->
     <section id="page-training" class="page">
         <h1>Training Log</h1>
         <div class="input-group">
@@ -126,7 +152,6 @@
     </section>
 </div>
 
-<!-- 底部導航欄 -->
 <nav>
     <div class="nav-item active" onclick="navTo('home')"><span class="nav-icon">○</span><span class="nav-text">Home</span></div>
     <div class="nav-item" onclick="navTo('peaks')"><span class="nav-icon">△</span><span class="nav-text">Peaks</span></div>
@@ -134,16 +159,14 @@
     <div class="nav-item" onclick="navTo('training')"><span class="nav-icon">◇</span><span class="nav-text">Train</span></div>
 </nav>
 
-<!-- 完登彈窗 -->
 <div id="modal-completed" class="modal">
     <div class="close-modal" onclick="closeModal()">×</div>
     <h1>完登清單</h1>
     <div id="completed-list-content"></div>
 </div>
 
-<!-- 所有的 JavaScript 邏輯 -->
 <script>
-    // 完整的 100 座百岳數據
+    // 資料定義
     const PEAKS_DATA = [
         {id:1, name:"玉山主峰", height:3952, grade:"A", range:"玉山", hut:"排雲山莊", permit:"入園+入山", transport:"嘉義轉接駁"},
         {id:2, name:"雪山主峰", height:3886, grade:"A", range:"雪山", hut:"三六九山莊", permit:"入園", transport:"武陵農場"},
@@ -228,7 +251,7 @@
         {id:81, name:"巴巴山", height:3442, grade:"B", range:"南湖", hut:"南湖山屋", permit:"入山", transport:"思源"},
         {id:82, name:"馬比杉山", height:3211, grade:"C", range:"南湖", hut:"無", permit:"入山", transport:"思源"},
         {id:83, name:"南湖南峰", height:3462, grade:"B", range:"南湖", hut:"南湖山屋", permit:"入山", transport:"思源"},
-        {id:84, name:"審馬陣山", height:3141, height:3141, grade:"A", range:"南湖", hut:"審馬陣山屋", permit:"入山", transport:"思源"},
+        {id:84, name:"審馬陣山", height:3141, grade:"A", range:"南湖", hut:"審馬陣山屋", permit:"入山", transport:"思源"},
         {id:85, name:"雪山東峰", height:3201, grade:"A", range:"雪山", hut:"七卡山莊", permit:"入園", transport:"武陵"},
         {id:86, name:"閂山", height:3168, grade:"A", range:"北二段", hut:"無", permit:"入園", transport:"清泉橋"},
         {id:87, name:"西巒大山", height:3081, grade:"B", range:"玉山西部", hut:"無", permit:"免", transport:"人倫"},
@@ -247,14 +270,12 @@
         {id:100, name:"石門山", height:3237, grade:"A", range:"合歡", hut:"無", permit:"免", transport:"台14甲"}
     ];
 
-    // 應用程式狀態管理
     let state = {
         completed: JSON.parse(localStorage.getItem('mh-completed')) || {},
         gears: JSON.parse(localStorage.getItem('mh-gears')) || [],
         logs: JSON.parse(localStorage.getItem('mh-train-logs')) || []
     };
 
-    // 儲存狀態到本地
     function save() {
         localStorage.setItem('mh-completed', JSON.stringify(state.completed));
         localStorage.setItem('mh-gears', JSON.stringify(state.gears));
@@ -262,7 +283,36 @@
         updateUI();
     }
 
-    // 頁面切換邏輯
+    // 備份邏輯
+    function exportData() {
+        const data = JSON.stringify(state, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MountainHub_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                state = imported;
+                save();
+                location.reload();
+            } catch (err) {
+                alert("無效的 JSON 檔案");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // 導航
     function navTo(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -271,20 +321,23 @@
         document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
     }
 
-    // 渲染百岳列表
+    // 百岳渲染 (支援搜尋)
     function renderPeaks() {
+        const query = document.getElementById('peak-search').value.toLowerCase();
         const container = document.getElementById('peaks-container');
-        container.innerHTML = PEAKS_DATA.map(p => `
+        const filtered = PEAKS_DATA.filter(p => p.name.includes(query) || p.range.includes(query) || p.grade.toLowerCase().includes(query));
+
+        container.innerHTML = filtered.map(p => `
             <div class="peak-item" onclick="togglePeak(${p.id})">
                 <div class="peak-main">
-                    <span class="peak-title">${p.id.toString().padStart(3, '0')} ${p.name} (${p.height}m)</span>
+                    <span class="peak-title">${p.id.toString().padStart(3, '0')} ${p.name} (${p.height}m) ${state.completed[p.id] ? '✓' : ''}</span>
                     <span class="peak-meta">${p.grade}級 | ${p.range}</span>
                 </div>
                 <div id="peak-detail-${p.id}" class="peak-details">
                     <p>🛖 山屋：${p.hut}</p>
                     <p>📋 證件：${p.permit}</p>
                     <p>🚌 交通：${p.transport}</p>
-                    <button class="btn-done ${state.completed[p.id] ? 'is-completed' : ''}" onclick="toggleComplete(event, ${p.id}, '${p.name}')">
+                    <button class="btn-done ${state.completed[p.id] ? 'is-completed' : ''}" onclick="toggleComplete(event, ${p.id})">
                         ${state.completed[p.id] ? '已完登 (' + state.completed[p.id] + ')' : '標記為完登'}
                     </button>
                 </div>
@@ -299,24 +352,21 @@
         if(!isOpen) el.classList.add('open');
     }
 
-    function toggleComplete(event, id, name) {
+    function toggleComplete(event, id) {
         event.stopPropagation();
-        if (state.completed[id]) {
-            delete state.completed[id];
-        } else {
-            const date = new Date().toISOString().split('T')[0];
-            state.completed[id] = date;
-        }
+        if (state.completed[id]) delete state.completed[id];
+        else state.completed[id] = new Date().toISOString().split('T')[0];
         save();
         renderPeaks();
     }
 
-    // 輕量化系統邏輯
+    // 裝備渲染 (系統分類)
     function addGear() {
+        const category = document.getElementById('gear-category').value;
         const name = document.getElementById('gear-name').value;
         const weight = parseInt(document.getElementById('gear-weight').value);
         if(!name || isNaN(weight)) return;
-        state.gears.push({ id: Date.now(), name, weight });
+        state.gears.push({ id: Date.now(), category, name, weight });
         document.getElementById('gear-name').value = '';
         document.getElementById('gear-weight').value = '';
         save();
@@ -331,15 +381,26 @@
 
     function renderGears() {
         const container = document.getElementById('gear-container');
-        container.innerHTML = state.gears.map(g => `
-            <div class="list-row">
-                <div style="display:flex; align-items:center;">
-                    <input type="checkbox" onchange="calcWeight()" class="gear-checkbox" data-weight="${g.weight}" style="margin-right:12px; width:18px; height:18px;">
-                    ${g.name}
-                </div>
-                <div>${g.weight}g <span onclick="deleteGear(${g.id})" style="margin-left:15px; color:#ccc; cursor:pointer; font-size:18px;">×</span></div>
-            </div>
-        `).join('');
+        const categories = ["炊具系統", "電子系統", "背負系統", "睡眠系統", "其他"];
+        let html = '';
+        categories.forEach(cat => {
+            const items = state.gears.filter(g => g.category === cat || (!g.category && cat === "其他"));
+            if(items.length > 0) {
+                html += `<h2>${cat}</h2>`;
+                items.forEach(g => {
+                    html += `
+                        <div class="list-row">
+                            <div style="display:flex; align-items:center;">
+                                <input type="checkbox" onchange="calcWeight()" class="gear-checkbox" data-weight="${g.weight}" style="margin-right:12px; width:18px; height:18px;">
+                                ${g.name}
+                            </div>
+                            <div>${g.weight}g <span onclick="deleteGear(${g.id})" style="margin-left:15px; color:#ccc; cursor:pointer;">×</span></div>
+                        </div>
+                    `;
+                });
+            }
+        });
+        container.innerHTML = html || "<p style='color:#717171; font-size:13px; margin-top:20px;'>尚未新增裝備。</p>";
         calcWeight();
     }
 
@@ -349,7 +410,7 @@
         document.getElementById('base-weight-display').innerText = (totalMg / 1000).toFixed(2);
     }
 
-    // 訓練日誌邏輯
+    // 訓練日誌
     function addTrain() {
         const date = document.getElementById('train-date').value;
         const desc = document.getElementById('train-desc').value;
@@ -373,14 +434,13 @@
             <div class="list-row">
                 <div style="flex:1;">
                     <div class="log-date">${l.date}</div>
-                    <div style="font-size:14px; color:#333; line-height:1.5;">${l.desc}</div>
+                    <div style="font-size:14px; color:#333;">${l.desc}</div>
                 </div>
-                <span onclick="deleteLog(${l.id})" style="color:#ccc; font-size:22px; padding-left:15px; cursor:pointer;">×</span>
+                <span onclick="deleteLog(${l.id})" style="color:#ccc; font-size:22px; cursor:pointer;">×</span>
             </div>
         `).join('');
     }
 
-    // UI 更新
     function updateUI() {
         const count = Object.keys(state.completed).length;
         document.getElementById('total-done-count').innerText = count;
@@ -390,16 +450,11 @@
     function showCompletedList() {
         const content = document.getElementById('completed-list-content');
         const entries = Object.entries(state.completed).sort((a,b) => b[1].localeCompare(a[1]));
-        if(entries.length === 0) {
-            content.innerHTML = "<p style='color:#717171; font-size:14px; text-align:center; padding-top:40px;'>尚未標記任何完登百岳。</p>";
-        } else {
-            content.innerHTML = entries.map(([id, date]) => {
+        content.innerHTML = entries.length === 0 ? "<p style='text-align:center; padding:40px;'>無紀錄</p>" :
+            entries.map(([id, date]) => {
                 const p = PEAKS_DATA.find(x => x.id == id);
-                return `<div style="padding:16px 0; border-bottom:0.5px solid #eee; font-size:14px;">
-                    <strong>${p ? p.name : '未知'}</strong> <span style="color:#717171; float:right;">${date}</span>
-                </div>`;
+                return `<div class="list-row"><strong>${p ? p.name : '未知'}</strong> <span>${date}</span></div>`;
             }).join('');
-        }
         document.getElementById('modal-completed').classList.add('active');
     }
 
@@ -407,7 +462,6 @@
         document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
     }
 
-    // 初始化應用程式
     window.onload = () => {
         document.getElementById('train-date').valueAsDate = new Date();
         renderPeaks();
